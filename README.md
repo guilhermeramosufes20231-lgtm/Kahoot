@@ -1,1 +1,552 @@
 # Kahoot
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qual é a sua geração? 🧬</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Inter:wght@400;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --a: #e63946;
+    --b: #f4a261;
+    --c: #2a9d8f;
+    --d: #4361ee;
+  }
+
+  body {
+    min-height: 100vh;
+    background: #0d0d1a;
+    font-family: 'Nunito', sans-serif;
+    color: #fff;
+    overflow-x: hidden;
+  }
+
+  /* BG */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse at 15% 15%, rgba(67,97,238,0.22) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 85%, rgba(199,125,255,0.18) 0%, transparent 55%);
+    pointer-events: none;
+  }
+
+  .screen { display: none; position: relative; z-index: 1; }
+  .screen.active { display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* ===== LOBBY ===== */
+  #s-lobby { align-items: center; justify-content: center; padding: 40px 24px; text-align: center; }
+
+  .logo { font-size: 72px; margin-bottom: 8px; animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+  .main-title {
+    font-size: clamp(28px, 7vw, 52px);
+    font-weight: 900;
+    background: linear-gradient(90deg, #c77dff, #4cc9f0, #06d6a0);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1.15; margin-bottom: 10px;
+  }
+
+  .subtitle { font-family: 'Inter', sans-serif; font-size: 15px; opacity: 0.65; margin-bottom: 36px; line-height: 1.5; }
+
+  .rules {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px; padding: 20px 24px;
+    margin-bottom: 32px; text-align: left; width: 100%; max-width: 480px;
+  }
+  .rules h3 { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; opacity: 0.5; margin-bottom: 12px; }
+  .rules li { font-size: 15px; margin-bottom: 8px; list-style: none; padding-left: 4px; }
+
+  .start-btn {
+    background: linear-gradient(135deg, #c77dff, #4361ee);
+    color: #fff; border: none; border-radius: 18px;
+    padding: 18px 52px; font-size: 20px; font-weight: 900;
+    cursor: pointer; font-family: 'Nunito', sans-serif;
+    box-shadow: 0 8px 32px rgba(199,125,255,0.45);
+    transition: transform 0.15s, box-shadow 0.15s;
+    width: 100%; max-width: 360px;
+  }
+  .start-btn:active { transform: scale(0.97); box-shadow: 0 4px 16px rgba(199,125,255,0.3); }
+
+  /* ===== COUNTDOWN ===== */
+  #s-countdown { align-items: center; justify-content: center; text-align: center; }
+  .cd-label { font-size: 22px; opacity: 0.6; margin-bottom: 16px; }
+  .cd-num {
+    font-size: clamp(100px, 28vw, 180px);
+    font-weight: 900; line-height: 1;
+    background: linear-gradient(135deg, #c77dff, #4cc9f0);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    animation: pop 0.5s cubic-bezier(.36,1.56,.64,1);
+  }
+  @keyframes pop { 0%{transform:scale(0.3);opacity:0} 100%{transform:scale(1);opacity:1} }
+
+  /* ===== QUESTION ===== */
+  #s-question { padding: 0; }
+
+  .q-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px;
+    background: rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
+  }
+  .q-num { font-size: 14px; font-weight: 800; opacity: 0.7; white-space: nowrap; }
+  .timer-wrap { flex: 1; display: flex; align-items: center; gap: 10px; }
+  .timer-track { flex: 1; height: 12px; background: rgba(255,255,255,0.1); border-radius: 99px; overflow: hidden; }
+  .timer-fill {
+    height: 100%; border-radius: 99px;
+    background: #06d6a0;
+    transition: width 1s linear, background 0.5s;
+  }
+  .timer-sec { font-size: 22px; font-weight: 900; min-width: 34px; text-align: right; }
+  .q-pts { font-size: 13px; font-weight: 800; color: #ffd166; white-space: nowrap; }
+
+  .q-body {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 24px 20px 16px; text-align: center;
+  }
+  .q-emoji { font-size: 54px; margin-bottom: 12px; }
+  .q-text { font-size: clamp(17px, 4.5vw, 26px); font-weight: 900; line-height: 1.35; max-width: 600px; }
+
+  .options {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px; padding: 0 16px 24px;
+    max-width: 700px; width: 100%; margin: 0 auto;
+  }
+  .opt-btn {
+    border: none; border-radius: 16px;
+    padding: 16px 14px; cursor: pointer;
+    display: flex; flex-direction: column; gap: 8px;
+    text-align: left; transition: opacity 0.3s, transform 0.15s;
+    min-height: 88px;
+  }
+  .opt-btn:active { transform: scale(0.96); }
+  .opt-btn[data-color="a"] { background: var(--a); }
+  .opt-btn[data-color="b"] { background: var(--b); }
+  .opt-btn[data-color="c"] { background: var(--c); }
+  .opt-btn[data-color="d"] { background: var(--d); }
+
+  .opt-btn.dimmed { opacity: 0.35; transform: scale(0.98); }
+  .opt-btn.chosen { outline: 4px solid #fff; transform: scale(0.97); }
+
+  .opt-letter {
+    background: rgba(0,0,0,0.25); border-radius: 8px;
+    padding: 2px 10px; font-weight: 900; font-size: 15px; color: #fff;
+    align-self: flex-start;
+  }
+  .opt-text { color: #fff; font-weight: 800; font-size: clamp(12px, 2.8vw, 15px); line-height: 1.35; }
+
+  .answered-bar {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    justify-content: center; padding: 0 16px 16px;
+    animation: fadeUp 0.4s ease;
+  }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .answered-chip {
+    background: rgba(255,255,255,0.1); border-radius: 50px;
+    padding: 6px 14px; font-size: 13px; font-weight: 700;
+  }
+
+  /* ===== RESULT ===== */
+  #s-result { align-items: center; justify-content: flex-start; padding: 40px 24px 60px; }
+
+  .result-badge {
+    background: rgba(0,0,0,0.3); border-radius: 50px;
+    padding: 6px 22px; font-size: 12px; font-weight: 800;
+    letter-spacing: 3px; margin-bottom: 16px; opacity: 0.85;
+    text-transform: uppercase;
+  }
+  .result-emoji { font-size: 80px; margin-bottom: 8px; animation: bounce 0.6s ease; }
+  @keyframes bounce { 0%{transform:scale(0)} 70%{transform:scale(1.2)} 100%{transform:scale(1)} }
+
+  .result-title {
+    font-size: clamp(30px, 8vw, 56px); font-weight: 900;
+    text-align: center; margin-bottom: 16px;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  .result-desc {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(14px, 3vw, 17px); line-height: 1.65;
+    text-align: center; opacity: 0.93;
+    background: rgba(0,0,0,0.22);
+    border-radius: 18px; padding: 20px 22px;
+    margin-bottom: 24px; max-width: 560px;
+  }
+  .trait-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 32px; }
+  .trait-chip {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 50px; padding: 8px 20px;
+    font-weight: 800; font-size: 14px;
+  }
+
+  .score-box {
+    width: 100%; max-width: 480px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 20px; padding: 20px 24px;
+    margin-bottom: 28px;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .score-box h3 { font-size: 18px; margin-bottom: 14px; text-align: center; }
+  .score-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 12px;
+    margin-bottom: 8px;
+    background: rgba(255,255,255,0.08);
+  }
+  .score-row.you { background: rgba(255,255,255,0.22); }
+  .score-rank { font-size: 20px; }
+  .score-name { flex: 1; font-weight: 800; font-size: 15px; }
+  .score-pts { font-weight: 900; font-size: 16px; }
+
+  .replay-btn {
+    background: rgba(0,0,0,0.3);
+    color: #fff; border: 2px solid rgba(255,255,255,0.4);
+    border-radius: 50px; padding: 14px 40px;
+    font-size: 17px; font-weight: 900;
+    cursor: pointer; font-family: 'Nunito', sans-serif;
+    transition: background 0.2s;
+  }
+  .replay-btn:hover { background: rgba(255,255,255,0.15); }
+
+  /* ===== CONFETTI ===== */
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
+
+  /* mobile tweaks */
+  @media (max-width: 420px) {
+    .options { grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 12px 20px; }
+    .opt-btn { min-height: 76px; padding: 12px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOBBY -->
+<div id="s-lobby" class="screen active">
+  <div class="logo">🧬</div>
+  <h1 class="main-title">Qual é a sua geração?</h1>
+  <p class="subtitle">10 perguntas rápidas · Sem mencionar idade<br>100% baseado em comportamento e valores</p>
+  <div class="rules">
+    <h3>Como funciona</h3>
+    <ul>
+      <li>⏱️ 15 segundos por pergunta</li>
+      <li>🎯 Escolha a opção que mais combina com você</li>
+      <li>🏆 No fim, descubra sua geração!</li>
+      <li>📲 Manda o link pro grupo e compare</li>
+    </ul>
+  </div>
+  <button class="start-btn" onclick="startCountdown()">🚀 Começar agora!</button>
+</div>
+
+<!-- COUNTDOWN -->
+<div id="s-countdown" class="screen">
+  <p class="cd-label">Prepara!</p>
+  <div class="cd-num" id="cd-num">3</div>
+</div>
+
+<!-- QUESTION -->
+<div id="s-question" class="screen">
+  <div class="q-header">
+    <span class="q-num" id="q-num">1 / 10</span>
+    <div class="timer-wrap">
+      <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
+      <span class="timer-sec" id="timer-sec">15</span>
+    </div>
+    <span class="q-pts">🔥 +1000 pts</span>
+  </div>
+  <div class="q-body">
+    <div class="q-emoji" id="q-emoji">💼</div>
+    <h2 class="q-text" id="q-text">Pergunta</h2>
+  </div>
+  <div class="options" id="options"></div>
+  <div class="answered-bar" id="answered-bar" style="display:none"></div>
+</div>
+
+<!-- RESULT -->
+<div id="s-result" class="screen">
+  <div class="result-badge">Resultado</div>
+  <div class="result-emoji" id="r-emoji">🌟</div>
+  <h1 class="result-title" id="r-title">Geração Y</h1>
+  <p class="result-desc" id="r-desc"></p>
+  <div class="trait-grid" id="r-traits"></div>
+  <div class="score-box">
+    <h3>🏆 Placar Final</h3>
+    <div id="scoreboard"></div>
+  </div>
+  <button class="replay-btn" onclick="replay()">🔄 Jogar de novo</button>
+</div>
+
+<canvas id="confetti"></canvas>
+
+<script>
+const QUESTIONS = [
+  {
+    emoji: "💼",
+    text: "Como você enxerga sua relação com o trabalho?",
+    opts: [
+      { text: "Trabalho é vida. Sacrifício = sucesso.", gen: "boomer" },
+      { text: "Trabalho para viver, não vivo para trabalhar.", gen: "x" },
+      { text: "Quero propósito E salário bom, por favor.", gen: "y" },
+      { text: "Só se for remoto, flexível e com impacto real.", gen: "z" },
+    ]
+  },
+  {
+    emoji: "📣",
+    text: "Seu chefe te critica. O que passa pela sua cabeça?",
+    opts: [
+      { text: "Chefe tem razão. Vou me dedicar mais.", gen: "boomer" },
+      { text: "Ok, mas eu sei o que estou fazendo.", gen: "x" },
+      { text: "Feedback é ótimo! Mas cadê o elogio junto?", gen: "y" },
+      { text: "Já postei isso no LinkedIn como aprendizado.", gen: "z" },
+    ]
+  },
+  {
+    emoji: "🏠",
+    text: "Qual é o seu modelo ideal de trabalho?",
+    opts: [
+      { text: "Presencial. Empresa é lugar de trabalhar.", gen: "boomer" },
+      { text: "Híbrido. Liberdade com responsabilidade.", gen: "x" },
+      { text: "Flexível. O resultado é o que importa.", gen: "y" },
+      { text: "100% remoto. Pode ser de qualquer canto.", gen: "z" },
+    ]
+  },
+  {
+    emoji: "🎯",
+    text: "O que mais te motiva no trabalho?",
+    opts: [
+      { text: "Estabilidade, missão da empresa e respeito.", gen: "boomer" },
+      { text: "Autonomia e equilíbrio entre vida e trabalho.", gen: "x" },
+      { text: "Crescimento rápido e aprendizado constante.", gen: "y" },
+      { text: "Impacto real, diversidade e propósito social.", gen: "z" },
+    ]
+  },
+  {
+    emoji: "💬",
+    text: "Como você prefere se comunicar no trabalho?",
+    opts: [
+      { text: "E-mail formal ou reunião presencial.", gen: "boomer" },
+      { text: "Direto ao ponto. E-mail ou ligação rápida.", gen: "x" },
+      { text: "Slack ou mensagem. Rápido e informal.", gen: "y" },
+      { text: "Áudio no zap, meme no grupo ou vídeo curto.", gen: "z" },
+    ]
+  },
+  {
+    emoji: "🚀",
+    text: "O que você acha sobre mudar de empresa?",
+    opts: [
+      { text: "Lealdade é tudo. Construo minha carreira em um lugar.", gen: "boomer" },
+      { text: "Mudo se fizer sentido para o meu crescimento.", gen: "x" },
+      { text: "Já planejei o próximo passo enquanto estou aqui.", gen: "y" },
+      { text: "Já tive 3 empregos e um freela antes dos 25.", gen: "z" },
+    ]
+  },
+  {
+    emoji: "🎓",
+    text: "Como você prefere aprender coisas novas?",
+    opts: [
+      { text: "Treinamento presencial ou manual. Do jeito certo.", gen: "boomer" },
+      { text: "Livros, cursos e experiência prática no dia a dia.", gen: "x" },
+      { text: "YouTube, cursos online e podcasts.", gen: "y" },
+      { text: "TikTok, reels e threads. 60 segundos ou nada.", gen: "z" },
+    ]
+  },
+  {
+    emoji: "💰",
+    text: "Na escolha de um emprego, o que pesa mais?",
+    opts: [
+      { text: "Reputação da empresa e estabilidade.", gen: "boomer" },
+      { text: "Salário competitivo + equilíbrio pessoal.", gen: "x" },
+      { text: "Plano de carreira claro + salário + propósito.", gen: "y" },
+      { text: "Cultura da empresa, diversidade e transparência.", gen: "z" },
+    ]
+  },
+  {
+    emoji: "🌍",
+    text: "Sua empresa faz algo errado eticamente. O que você faz?",
+    opts: [
+      { text: "Converso internamente. Roupa suja se lava em casa.", gen: "boomer" },
+      { text: "Questiono com discrição. Não me meto à toa.", gen: "x" },
+      { text: "Falo com o RH e marco reunião com o gestor.", gen: "y" },
+      { text: "Já pesquisei se tem avaliação ruim no Glassdoor.", gen: "z" },
+    ]
+  },
+  {
+    emoji: "🏆",
+    text: "O que é sucesso para você?",
+    opts: [
+      { text: "Chegar ao topo com anos de dedicação.", gen: "boomer" },
+      { text: "Autonomia, reconhecimento e qualidade de vida.", gen: "x" },
+      { text: "Crescer rápido, ter impacto e ser bem remunerado.", gen: "y" },
+      { text: "Fazer o que amo sem abrir mão de quem sou.", gen: "z" },
+    ]
+  },
+];
+
+const GEN = {
+  boomer: {
+    label: "Baby Boomer 🏅",
+    emoji: "🏅",
+    bg: "linear-gradient(135deg, #e76f51, #f4a261)",
+    desc: "Você é um pilar! Dedicação, lealdade e foco em resultados são suas marcas. Valoriza estabilidade, respeita hierarquias e acredita que trabalho duro é o caminho. Você construiu o chão onde os outros pisam.",
+    traits: ["💪 Trabalho duro", "🏢 Lealdade", "📋 Foco em resultado", "🤝 Respeito à hierarquia"],
+  },
+  x: {
+    label: "Geração X ⚡",
+    emoji: "⚡",
+    bg: "linear-gradient(135deg, #4361ee, #4cc9f0)",
+    desc: "Você é o equilíbrio perfeito! Independente, autoconfiante e com perfil empreendedor afiado. Sabe gerar resultados e ainda manter a vida pessoal em ordem. A geração mais subestimada da história.",
+    traits: ["🧠 Independência", "💼 Empreendedorismo", "⚖️ Equilíbrio", "📈 Resultados"],
+  },
+  y: {
+    label: "Geração Y 🌟",
+    emoji: "🌟",
+    bg: "linear-gradient(135deg, #7b2d8b, #c77dff)",
+    desc: "Você quer propósito, crescimento e meritocracia — e quer agora! Conectado, colaborativo e cheio de ideias. Busca feedback constante e não tem medo de questionar o status quo.",
+    traits: ["🚀 Crescimento rápido", "🎯 Meritocracia", "🤝 Colaboração", "💬 Feedback"],
+  },
+  z: {
+    label: "Geração Z 🔥",
+    emoji: "🔥",
+    bg: "linear-gradient(135deg, #118ab2, #06d6a0)",
+    desc: "Você nasceu digital e pensa em rede! Diversidade, propósito e autenticidade não são opcionais — são essenciais. Questiona tudo, aprende em 60 segundos e não aceita fingimento corporativo.",
+    traits: ["🌈 Diversidade", "📲 Digital nativo", "💚 Propósito social", "🎭 Autenticidade"],
+  },
+};
+
+const LETTERS = ["A","B","C","D"];
+const COLORS = ["a","b","c","d"];
+
+let current = 0;
+let answers = [];
+let timerInterval = null;
+let timeLeft = 15;
+let answered = false;
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startCountdown() {
+  show('s-countdown');
+  let n = 3;
+  document.getElementById('cd-num').textContent = n;
+  const iv = setInterval(() => {
+    n--;
+    if (n === 0) {
+      clearInterval(iv);
+      document.getElementById('cd-num').textContent = 'GO!';
+      setTimeout(() => { current = 0; answers = []; loadQuestion(); }, 600);
+    } else {
+      document.getElementById('cd-num').textContent = n;
+      document.getElementById('cd-num').style.animation = 'none';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        document.getElementById('cd-num').style.animation = 'pop 0.5s cubic-bezier(.36,1.56,.64,1)';
+      }));
+    }
+  }, 1000);
+}
+
+function loadQuestion() {
+  answered = false;
+  show('s-question');
+  const q = QUESTIONS[current];
+  document.getElementById('q-num').textContent = `${current+1} / ${QUESTIONS.length}`;
+  document.getElementById('q-emoji').textContent = q.emoji;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('answered-bar').style.display = 'none';
+  document.getElementById('answered-bar').innerHTML = '';
+
+  const optEl = document.getElementById('options');
+  optEl.innerHTML = '';
+  q.opts.forEach((o, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.setAttribute('data-color', COLORS[i]);
+    btn.setAttribute('data-idx', i);
+    btn.innerHTML = `<span class="opt-letter">${LETTERS[i]}</span><span class="opt-text">${o.text}</span>`;
+    btn.onclick = () => selectAnswer(i);
+    optEl.appendChild(btn);
+  });
+
+  startTimer();
+}
+
+function startTimer() {
+  timeLeft = 15;
+  clearInterval(timerInterval);
+  updateTimer();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimer();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      if (!answered) { answered = true; answers.push(null); showAnswered(); setTimeout(next, 2200); }
+    }
+  }, 1000);
+}
+
+function updateTimer() {
+  const pct = (timeLeft / 15) * 100;
+  const fill = document.getElementById('timer-fill');
+  fill.style.width = pct + '%';
+  fill.style.background = pct > 50 ? '#06d6a0' : pct > 25 ? '#ffd166' : '#e63946';
+  document.getElementById('timer-sec').textContent = timeLeft;
+}
+
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+  clearInterval(timerInterval);
+
+  const gen = QUESTIONS[current].opts[idx].gen;
+  answers.push(gen);
+
+  const btns = document.querySelectorAll('.opt-btn');
+  btns.forEach((b, i) => {
+    if (i === idx) b.classList.add('chosen');
+    else b.classList.add('dimmed');
+  });
+
+  showAnswered();
+  setTimeout(next, 2000);
+}
+
+function showAnswered() {
+  const bar = document.getElementById('answered-bar');
+  bar.style.display = 'flex';
+  const names = [
+    {n:"Ana",e:"🐸"},{n:"Rodrigo",e:"🦊"},{n:"Camila",e:"🐼"},{n:"Leo",e:"🦁"}
+  ];
+  bar.innerHTML = names.map(p => `<span class="answered-chip">${p.e} ${p.n} respondeu!</span>`).join('');
+}
+
+function next() {
+  current++;
+  if (current >= QUESTIONS.length) showResult();
+  else loadQuestion();
+}
+
+function showResult() {
+  const counts = {};
+  answers.forEach(a => { if(a) counts[a] = (counts[a]||0)+1; });
+  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'y';
+  const g = GEN[top];
+
+  document.getElementById('s-result').style.background = g.bg;
+  document.getElementById('r-emoji').textContent = g.emoji;
+  document.getElementById('r-title').textContent = g.label;
+  document.getElementById('r-desc').textContent = g.desc;
+
+  const tf = document.getElementById('r-traits');
+  tf.innerHTML = g.traits.map(t => `<span class="trait-chip">${t}</span>`).join('');
+
+  const scores = [
+    {name:"Rodrigo 🦊", pts:9800, 
