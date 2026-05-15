@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sistema de Gestão Contratual com IA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen p-6">
+  <div class="max-w-7xl mx-auto space-y-8">
+
+    <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <h1 class="text-4xl font-bold tracking-tight">
+          Sistema de Gestão Contratual com IA
+        </h1>
+
+        <p class="text-slate-400 mt-2">
+          Plataforma inteligente para leitura automática de contratos,
+          cadastro e gestão financeira.
+        </p>
+      </div>
+
+      <button class="bg-blue-600 hover:bg-blue-500 transition px-5 py-3 rounded-2xl font-semibold shadow-lg">
+        Novo Contrato
+      </button>
+    </header>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
+        <p class="text-slate-400 text-sm">Contratos Ativos</p>
+        <h2 class="text-3xl font-bold mt-3">28</h2>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
+        <p class="text-slate-400 text-sm">Valor Global</p>
+        <h2 class="text-3xl font-bold mt-3">R$ 8,7 Mi</h2>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
+        <p class="text-slate-400 text-sm">Sponsors</p>
+        <h2 class="text-3xl font-bold mt-3">11</h2>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
+        <p class="text-slate-400 text-sm">DOA Acumulada</p>
+        <h2 class="text-3xl font-bold mt-3">R$ 432 mil</h2>
+      </div>
+
+    </section>
+
+    <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+      <div class="xl:col-span-2 bg-slate-900 border border-slate-800 rounded-3xl p-6">
+
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-2xl font-bold">
+              Contratos Cadastrados
+            </h2>
+
+            <p class="text-slate-400 text-sm mt-1">
+              Contratos lidos automaticamente pela IA.
+            </p>
+          </div>
+
+          <input
+            placeholder="Pesquisar contrato..."
+            class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 outline-none w-64"
+          />
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="text-slate-400 border-b border-slate-800">
+                <th class="pb-4">Empresa</th>
+                <th class="pb-4">Projeto</th>
+                <th class="pb-4">Valor</th>
+                <th class="pb-4">Vigência</th>
+                <th class="pb-4">Status</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              <tr class="border-b border-slate-800 hover:bg-slate-800/40 transition">
+                <td class="py-5">Vale S.A.</td>
+                <td>Pesquisa Oncológica</td>
+                <td>R$ 453.741,22</td>
+                <td>15 meses</td>
+
+                <td>
+                  <span class="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm">
+                    Em execução
+                  </span>
+                </td>
+              </tr>
+
+              <tr class="border-b border-slate-800 hover:bg-slate-800/40 transition">
+                <td class="py-5">Petrobras</td>
+                <td>Projeto Energias Renováveis</td>
+                <td>R$ 1.250.000,00</td>
+                <td>24 meses</td>
+
+                <td>
+                  <span class="bg-yellow-500/20 text-yellow-300 px-3 py-1 rounded-full text-sm">
+                    Prestação pendente
+                  </span>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+
+        <h2 class="text-2xl font-bold mb-4">
+          Upload Inteligente
+        </h2>
+
+        <div class="border-2 border-dashed border-slate-700 rounded-3xl p-8 text-center bg-slate-950">
+
+          <div class="space-y-3">
+
+            <div class="text-5xl">📄</div>
+
+            <h3 class="font-semibold text-lg">
+              Arraste o contrato PDF
+            </h3>
+
+            <p class="text-sm text-slate-400">
+              A IA irá ler automaticamente cláusulas, valores,
+              vigência, parcelas, desembolso e regras contratuais.
+            </p>
+
+            <input type="file" class="hidden" id="fileInput"/>
+
+            <button onclick="document.getElementById('fileInput').click()"
+              class="bg-blue-600 hover:bg-blue-500 transition px-5 py-3 rounded-2xl font-semibold mt-4">
+              Selecionar PDF
+            </button>
+
+          </div>
+        </div>
+
+        <div class="mt-6 space-y-4">
+
+          <div class="bg-slate-800 rounded-2xl p-4">
+
+            <p class="text-sm text-slate-400">
+              Última leitura IA
+            </p>
+
+            <div class="mt-3 space-y-2 text-sm">
+              <p><strong>Empresa:</strong> Vale S.A.</p>
+              <p><strong>Valor:</strong> R$ 453.741,22</p>
+              <p><strong>Parcelas:</strong> 2</p>
+              <p><strong>Vigência:</strong> 15 meses</p>
+              <p><strong>Status:</strong> Em execução</p>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+
+        <h2 class="text-2xl font-bold mb-4">
+          Fluxo de Desembolso
+        </h2>
+
+        <div class="space-y-4">
+
+          <div>
+            <div class="flex justify-between text-sm mb-2">
+              <span>Jan/2026</span>
+              <span>R$ 120.000</span>
+            </div>
+
+            <div class="h-3 bg-slate-800 rounded-full overflow-hidden">
+              <div class="h-full w-2/3 bg-blue-500 rounded-full"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-sm mb-2">
+              <span>Fev/2026</span>
+              <span>R$ 180.000</span>
+            </div>
+
+            <div class="h-3 bg-slate-800 rounded-full overflow-hidden">
+              <div class="h-full w-4/5 bg-blue-500 rounded-full"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-sm mb-2">
+              <span>Mar/2026</span>
+              <span>R$ 90.000</span>
+            </div>
+
+            <div class="h-3 bg-slate-800 rounded-full overflow-hidden">
+              <div class="h-full w-1/2 bg-blue-500 rounded-full"></div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+
+        <h2 class="text-2xl font-bold mb-4">
+          Inteligência Contratual
+        </h2>
+
+        <div class="space-y-4 text-sm">
+
+          <div class="bg-slate-800 rounded-2xl p-4">
+            <p class="font-semibold text-blue-300">
+              Regra crítica identificada
+            </p>
+
+            <p class="text-slate-300 mt-2">
+              O contrato possui condição de bloqueio de parcela
+              caso saldo remanescente ultrapasse 31%.
+            </p>
+          </div>
+
+          <div class="bg-slate-800 rounded-2xl p-4">
+            <p class="font-semibold text-blue-300">
+              Prestação de contas obrigatória
+            </p>
+
+            <p class="text-slate-300 mt-2">
+              A próxima parcela depende da aprovação da
+              prestação financeira parcial.
+            </p>
+          </div>
+
+          <div class="bg-slate-800 rounded-2xl p-4">
+            <p class="font-semibold text-blue-300">
+              Cláusula de confidencialidade
+            </p>
+
+            <p class="text-slate-300 mt-2">
+              O sistema detectou cláusula com vigência de
+              confidencialidade por 10 anos.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </div>
+</body>
+</html>
